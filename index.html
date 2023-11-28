@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel=stylesheet href="https://fonts.googleapis.com/css?family=Lobster|Dancing+Script|Open+Sans|Rubik|Lora">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <title>Diagramas UML</title>
+</head>
+<style>
+    html {
+        height: 100%;
+    }
+    body {
+        user-select: none;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(rgb(255, 232, 249), rgb(255, 203, 241))
+    }
+    body, p, h1 {
+        margin: 0
+    }
+    .D {
+        font-family: Rubik;
+        font-size: 20px;
+        padding: 15px 20px;
+        margin: 20px;
+        width: max-content;
+        height: min-content;
+        color: white;
+        border-radius: 15px;
+        cursor: pointer;
+        text-shadow: rgb(0,0,0,0.4) 2px 2px 0px;
+        box-shadow: rgb(0,0,0,0.3) -3px -3px 0px inset;
+        transition: all 0.3s ease
+    }
+    .D:hover {
+        transform: scale(1.2)
+    }
+    .C {
+        display: flex;
+        align-items: center;
+    }
+    .L1, .L3, .L4 {
+        background: rgb(211, 121, 187);
+    }
+    .L3, .L4 {
+        margin-left: 60px;
+    }
+    .L5 {
+        background: rgb(163, 163, 163)
+    }
+    .L2 {
+        background: rgb(197, 155, 190);
+    }
+    .L1 {
+        font-size: 22px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+    .div {
+        position: relative;
+        width: max-content;
+    }
+    canvas {
+        position: absolute;
+    }
+    section {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        left: -100%;
+        z-index: 1;
+        background: linear-gradient(rgba(24,2,18,0.8), rgb(24,2,18,0.9));
+        transition: all 0.7s ease
+    }
+    section > div {
+        font-family: Lora;
+        margin: auto;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        border-radius: 50px 0px 0px 50px;
+        width: calc(100% - 30px);
+        max-width: 800px;
+        max-height: 70%;
+        background: rgba(182, 98, 160, 0.7);
+        box-shadow: rgb(0,0,0,0.3) 6px 6px 0px;
+    }
+    section > div::-webkit-scrollbar {
+        background: rgb(182, 98, 160)
+    }
+    section > div::-webkit-scrollbar-thumb {
+        background: rgb(235, 147, 211)
+    }
+    section > div > h1 {
+        text-align: center;
+        font-family: Dancing Script;
+        font-size: 70px;
+        margin: 40px 0px;
+        background: -webkit-linear-gradient(rgb(211, 121, 187), white);
+        -webkit-background-clip: text;
+        background-clip: text;
+        filter: drop-shadow(rgb(0,0,0,0.3) 3px 3px 0px);
+        color: transparent
+    }
+    section > div > p, section > div > ul > li {
+        text-align: justify;
+        text-shadow: rgb(0,0,0,0.3) 2px 2px 0px
+    }
+    section > div > p {
+        text-indent: 100px;
+        margin: 40px 40px;
+        font-size: 16px;
+        color: rgb(255, 198, 240);
+    }
+    section > div > ul > li {
+        margin: 10px 40px;
+        font-size: 17px;
+        color: rgb(255, 221, 246);
+    }
+    .image {
+        width: calc(80% - 15px);
+        margin: 50px auto;
+        margin-bottom: 40px;
+        border-radius: 50px;
+        border: 15px solid rgb(211, 121, 187);
+        background: white;
+        box-shadow: rgb(0,0,0,0.3) 4px 4px 0px;
+        overflow: hidden;
+    }
+    .image > img {
+        cursor: zoom-in;
+        width: 100%;
+        height: calc(100% + 4px);
+    }
+    section > .x {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        height: 100px;
+        cursor: pointer;
+        transition: all 0.25s ease
+    }
+    section > .x:hover {
+        height: 120px;
+    }
+    section > .imgAmpl {
+        position: absolute;
+        cursor: zoom-out;
+        background: white
+    }
+    .loading {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        z-index: 3;
+        opacity: 1;
+        transition: all 0.5s ease
+    }
+    .loading > img {
+        width: 20%;
+        max-width: 250px;
+    }
+</style>
+<body>
+    <div class="loading">
+        <img src="/gif.gif">
+    </div>
+    <section>
+        <img src="x.webp" class="x">
+        <img class="imgAmpl" style="width: 0; height: 0">
+        <div></div>
+    </section>
+    <main>
+        <canvas></canvas>
+        <div class="C div">
+            <div class="D L1">Diagrama UML</div>
+            <div>
+                <div class=C>
+                    <div class="D L2">Diagrama estrutural</div>
+                    <div>
+                        <div class="D L3">Classe</div>
+                        <div class="D L3">Componente</div>
+                        <div class="D L3">Estrutura composta</div>
+                        <div class="D L3">Implantação</div>
+                        <div class="D L3">Objeto</div>
+                        <div class="D L3">Pacote</div>
+                        <div class="D L3">Perfil</div>
+                    </div>
+                </div>
+                <div class=C>
+                    <div class="D L2">Diagrama de comportamento</div>
+                    <div>
+                        <div class="D L4">Atividade</div>
+                        <div class="D L4">Caso de uso</div>
+                        <div class=C>
+                            <div class="D L4">Interação</div>
+                            <div>
+                                <div class="D L5">Comunicação</div>
+                                <div class="D L5">Sequência</div>
+                                <div class="D L5">Tempo</div>
+                                <div class="D L5">Visão geral de interação</div>
+                            </div>
+                        </div>
+                        <div class="D L4">Máquina de estado</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+<script>
+    let condSect = false
+    let L3c = [
+        `<h1>Diagrama de classe</h1>
+            <p><b>Um Diagrama de Classe é uma representação estática utilizada na programação para descrever a estrutura de um sistema</b>. Ele apresenta suas classes, atributos, operações e as relações entre os objetos. São muito úteis para o desenvolvimento de sistemas, pois definem todas as classes que o sistema precisa possuir e é a base para a construção dos diagramas de comunicação, sequência e estados. A estrutura de um diagrama de classe em UML é composta por três partes:</p>
+            <ul>
+                <li><b>Parte superior</b>: contém o nome da classe.</li>
+                <li><b>Parte do meio</b>: contém os atributos da classe.</li>
+                <li><b>Parte inferior</b>: inclui as operações da classe (métodos)</li>
+            </ul>
+            <p>Esses diagramas são bastante usados por engenheiros de software para documentar arquiteturas de software e são úteis em muitos estágios do design do sistema!</p>
+            <div class=image>
+                <img src='https://treinamentowaei.files.wordpress.com/2014/08/diagramaclasse.png'>
+            </div>`,
+
+
+        `<h1>Diagrama de componente</h1>
+            <p><b>O diagrama de componentes é uma ferramenta essencial para a criação de um sistema de software</b>. Ele mostra o relacionamento entre diferentes componentes de um sistema. No contexto da UML 2.0, um “componente” se refere a um módulo de classes que representa sistemas ou subsistemas independentes com a capacidade de interagir com o restante do sistema.</p>
+            <p><b>Este diagrama é utilizado para visualizar a organização dos componentes do sistema</b> e os relacionamentos de dependência entre eles, fornecendo uma visão de alto nível dos componentes dentro de um sistema. Os componentes podem ser um componente de software, como um banco de dados ou interface de usuário; ou um componente de hardware, como um circuito, microchip ou dispositivo; ou uma unidade de negócios, como fornecedor, folha de pagamento ou envio.</p>
+            <p><b>Os diagramas de componentes são usados para modelar sistemas de software em um alto nível ou para mostrar componentes em um nível de pacote mais baixo</b>. Eles são indispensáveis na criação do seu sistema, ajudando sua equipe a imaginar a estrutura física do sistema, prestar atenção aos componentes do sistema e como eles se relacionam, e enfatizar o comportamento do serviço quanto à interface</p>
+            <div class=image>
+                <img src='https://upload.wikimedia.org/wikipedia/commons/6/68/Composite_UML_class_diagram.svg'>
+            </div>`,
+
+
+        `<h1>Diagrama de estrutura composta</h1>
+            <p><b>O diagrama de estrutura composta é um diagrama estrutural UML que oferece uma visão geral lógica de todo ou parte de um sistema de software</b>. Ele atua como uma perspectiva dentro de um determinado classificador estruturado e define suas classes de configurações, interfaces, pacotes e as relações entre eles a partir de um nível detalhado.</p>
+            <p><b>Este diagrama é usado para descrever a colaboração interna de classes, interfaces ou componentes para especificar uma funcionalidade</b>. Ele permite ao usuário ver exatamente o que está contido em um objeto e especifica como diferentes propriedades se encaixam para produzir um determinado comportamento.</p>
+            <p><b>Os componentes básicos de um diagrama de estrutura composta incluem várias partes individuais de um sistema</b>, bem como as relações entre elas. Isso pode incluir classes, que agrupam objetos com propriedades ou comportamentos em comum, partes que atuam como uma instância de tempo de execução de classes ou interfaces, portas que atuam como um ponto de interação entre uma instância de classificador (ou seu comportamento) e seu ambiente, e interfaces que especificam o comportamento que o implementador concorda em atender.</p>
+            <div class=image>
+                <img src='https://d2slcw3kip6qmk.cloudfront.net/marketing/pages/blog/UML-composite-structure-diagram@2x.png'>
+            </div>`,
+
+
+        `<h1>Diagrama de implantação</h1>
+            <p><b>O diagrama de implantação é um tipo de diagrama UML que mostra a arquitetura de execução de um sistema</b>, incluindo nós, que podem ser ambientes de execução de hardware ou software, e o middleware que os conecta.</p>
+            <p>Os diagramas de implantação são normalmente usados para visualizar o hardware e software físico de um sistema. Usando-o, você pode entender como o sistema será fisicamente implantado no hardware. Os diagramas de implantação ajudam a modelar a topologia de hardware de um sistema em comparação com outros tipos de diagramas UML que, em sua maioria, esboçam os componentes lógicos de um sistema. <b>Os componentes básicos de um diagrama de implantação</b> incluem:</p>
+            <ul>
+                <li><b>Nós</b>: Um nó, representado como um cubo, é uma entidade física que executa um ou mais componentes, subsistemas ou executáveis. Um nó pode ser um hardware ou elemento de software.</li>
+                <li><b>Artefatos</b>: Os artefatos são elementos concretos que são causados por um processo de desenvolvimento.</li>
+                <li><b>Associação de Comunicação</b>: Isto é representado por uma linha sólida entre dois nós. Mostra o caminho de comunicação entre os nós.</li>
+                <li><b>Dispositivos</b>: Um dispositivo é um nó que é usado para representar um recurso computacional físico em um sistema.</li>
+                <li><b>Especificações de Implantação</b>: Especificações de implantação é um arquivo de configuração, como um arquivo de texto ou um documento XML. Ele descreve como um artefato é implantado em um nó.</li>
+            </ul>
+            <div class=image>
+                <img src='https://support.content.office.net/pt-br/media/f9d3a34e-c414-41f5-9686-deb0f7bc0779.gif'>
+            </div>`,
+
+
+        `<h1>Diagrama de objeto</h1>
+            <p>Um diagrama de objetos UML representa uma instância específica de um diagrama de classes em um determinado momento. Quando representado visualmente, você verá muitas semelhanças ao diagrama de classes. Um diagrama de objetos incide sobre os atributos de um conjunto de objetos, e como eles se relacionam entre si.</p>
+            <p>Os diagramas de objetos são fáceis de criar: são feitos de objetos, representados por retângulos e ligados entre si por linhas. Confira os principais elementos de um diagrama de objetos:</p>
+            <ul>
+                <li><b>Objetos</b>: são instâncias de uma classe. Por exemplo, se um “carro” for uma classe, um modelo Nissan Altima de 2007 é um objeto de uma classe.</li>
+                <li><b>Títulos de classe</b>: são os atributos específicos de uma determinada classe.</b></li>
+                <li><b>Atributos de classe</b>: Atributos de classe são representados por um retângulo com duas abas que indicam um elemento de software.</li>
+                <li><b>Links</b>: Ligações são as linhas que conectam duas formas de um diagrama de objetos, uma a outra.</li>
+            </ul>
+            <div class=image>
+                <img src='https://miro.medium.com/v2/resize:fit:628/1*Jhub06tVOfthGZzr9lTyTA.png'>
+            </div>`,
+
+        `<h1>Diagrama de pacote</h1>
+            <p><b>O diagrama de pacotes é um tipo de diagrama estrutural UML que é usado para mostrar a organização e disposição de vários elementos</b> de modelos em uma forma de pacotes. Um pacote é um agrupamento de elementos UML relacionados, como diagramas, documentos, classes ou até mesmo outros pacotes.</p>
+            <p>Este diagrama é muito utilizado para ilustrar a arquitetura de um sistema, mostrando o agrupamento de suas classes. Ele também é usado para simplificar diagramas de classes complexos.</p>
+            <p>Os componentes básicos de um diagrama de pacotes incluem:</p>
+            <ul>
+                <li><b>Pacote</b>: Este é um espaço de nomes usado para agrupar elementos logicamente relacionados dentro de um sistema.</li>
+                <li><b>Elemento empacotável</b>: Um elemento nomeado, possivelmente de propriedade direta de um pacote.</li>
+                <li><b>Dependências</b>: Esta é uma representação de como os elementos influenciam outros.</li>
+                <li><b>Importação do elemento</b>: Usado para importar elementos individuais sem recorrer a uma importação de pacotes.</li>
+                <li><b>Importação do pacote</b>: Esta é uma relação direcionada que adiciona os nomes dos membros do pacote importado.</li>
+                <li><b>Mesclar pacote</b>: Esta é uma relação direcionada em que o conteúdo de um pacote é estendido por outro conteúdo.</li>
+            </ul>
+            <div class=image>
+                <img src='https://webusupload.apowersoft.info/gitmind/wp-content/uploads/2021/06/sample-package-diagram.jpg'>
+            </div>`,
+
+
+        `<h1>Diagrama de perfil</h1>
+            <p><b>O diagrama de perfil é um tipo de diagrama estrutural UML que permite o uso de perfis</b> para um determinado metamodelo. Ele foi introduzido com UML 2.2 e fornece uma representação dos conceitos usados na definição de perfis, como pacotes, estereótipos e aplicação de perfis.</p>
+            <p><b>Os principais elementos</b> de um diagrama de perfil incluem:</p>
+            <ul>
+                <li><b>Estereótipo</b>: Representado como uma classe com o estereótipo <i>stereotype</i>.</li>
+                <li><b>Metaclasse</b>: Representada como uma classe com o estereótipo <i>metaclass</i>.</li>
+                <li><b>Perfil</b>: Representado como um pacote com o estereótipo <i>profile</i>.</li>
+            </ul>
+            <p>Os elementos de um diagrama de perfil podem ser relacionados usando os seguintes elementos:</p>
+            <ul>
+                <li><b>Extensão</b>: De um estereótipo a uma metaclasse, representada por uma seta sólida.</li>
+                <li><b>Aplicação de perfil</b>: De um perfil para um pacote de metamodelo, mostrado como uma seta pontilhada com o estereótipo <i>apply</i>.</li>
+                <li><b>Referência</b>: De um perfil a um pacote ou metaclasse referenciado pelo perfil, representado como uma seta pontilhada com o estereótipo <i>reference</i>.</li>
+            </ul>
+            <div class=image>
+                <img src='https://d3n817fwly711g.cloudfront.net/uploads/2012/02/Profile-Diagram.jpg'>
+            </div>`
+    ]
+
+    let L4c = [
+        `<h1>Diagrama de atividade</h1>
+            <p><b>Um Diagrama de Atividade é um diagrama definido pela Linguagem de Modelagem Unificada (UML), que representa os fluxos conduzidos por processamentos</b>. É essencialmente um gráfico de fluxo, mostrando o fluxo de controle de uma atividade para outra. Podem ser utilizados em todas as etapas de desenvolvimento de software e para diversos fins. Eles são muito semelhantes aos fluxogramas, sendo geralmente mais populares do que outros tipos de diagramas UML.</p>
+            <p>Eles também ajudam a visualizar um determinado caso de uso a um nível mais detalhado. Eles são considerados diagramas de comportamento porque descrevem o que é necessário acontecer no sistema sendo modelado. Além disso, os Diagramas de Atividade podem ser usados para representar um fluxo de eventos em um processo de negócios. Eles podem ser usados para examinar processos de negócios a fim de identificar seu fluxo e necessidades.</p>
+            <p>Os componentes mais comuns de um Diagrama de Atividade incluem:</p>
+            <ul>
+                <li><b>Ações</b>: uma etapa da atividade em que o usuário ou software realiza uma determinada tarefa.</li>
+                <li><b>Nó de decisão</b>: um ramo condicional no fluxo.</li>
+                <li><b>Fluxos de controle</b>: outro nome dado aos conectores que mostram o fluxo entre as etapas no diagrama.</li>
+                <li><b>Nó inicial</b>: simboliza o início da atividade.</li>
+                <li><b>Nó final</b>: representa a etapa final da atividade.</li>
+            </ul>
+            <p><b>Os Diagramas de Atividade oferecem uma série de benefícios para os usuários</b>, como demonstrar a lógica de um algoritmo, descrever as etapas realizadas em um caso de uso UML, ilustrar um processo de negócio ou fluxo de trabalho entre usuários e o sistema, simplificar e melhorar qualquer processo ao esclarecer casos de uso complicados, e modelar elementos de arquitetura de software, como método, função e operação.</p>
+            <div class=image>
+                <img src='https://cdn1.gnarususercontent.com.br/1/1233938/bee185fa-fd00-4e93-bed1-07571acc3c6e.png'>
+            </div>`,
+
+
+        `<h1>Diagrama de caso de uso</h1>
+            <p><b>Um Diagrama de Caso de Uso é um diagrama definido pela Linguagem de Modelagem Unificada (UML) que resume os detalhes dos usuários do seu sistema</b> (também conhecidos como atores) e as interações deles com o sistema. Os componentes mais comuns de um Diagrama de Caso de Uso incluem:</p>
+            <ul>
+                <li><b>Atores</b>: os usuários que interagem com o sistema. Ator pode ser uma pessoa, organização ou sistema externo que interage com seu aplicativo ou sistema.</li>
+                <li><b>Sistema</b>: uma sequência específica de ações e interações entre os atores e o sistema.</li>
+                <li><b>Metas</b>: o resultado final da maioria dos casos de uso.</li>
+            </ul>
+            <p><b>Eles são utilizados para representar as metas de interações entre sistemas e usuários</b>, definir e organizar requisitos funcionais no sistema, especificar o contexto e os requisitos do sistema, e modelar o fluxo básico de eventos no caso de uso. Além disso, <b>são ideais para representar o relacionamento entre casos de uso, atores e sistemas</b>. Eles não oferecem muitos detalhes, por exemplo, eles não mostram a ordem em que os passos são executados. Em vez disso, um Diagrama de Caso de Uso adequado dá uma visão geral do relacionamento entre casos de uso, atores e sistemas.</p>
+            <div class=image>
+                <img src='https://miro.medium.com/v2/resize:fit:540/1*UDTjd_BHX3ppJSqSwmud1A.png'>
+            </div>`,
+
+
+        `<h1>Diagrama de interação</h1>
+            <p><b>Um Diagrama de Interação é um tipo de diagrama UML usado para mostrar o comportamento interativo de um sistema</b>. Os diagramas de interação descrevem o fluxo de mensagens e fornecem contexto para uma ou mais linhas da vida dentro de um sistema. Além disso, os diagramas de interação podem ser usados para representar as sequências organizadas dentro de um sistema e servir como um meio para visualizar dados em tempo real por UML.</b>
+            <p>Os diagramas de interação são usados quando queremos entender o fluxo de mensagens e a organização estrutural. Fluxo de mensagens significa a sequência de fluxo de controle de um objeto para outro. Organização estrutural significa a organização visual dos elementos de um sistema.</p>
+            <p>Os diagramas de interação são divididos em <b>quatro tipos principais de diagramas</b>, em que cada um aborda um aspecto diferente do comportamento ou estrutura de um sistema:</p>
+            <ul>
+                <li><b>Diagrama de comunicação</b></li>
+                <li><b>Diagrama de sequência</b></li>
+                <li><b>Diagrama de tempo</b></li>
+                <li><b>Diagrama de visão geral de interação</b></li>
+            </ul>
+            <div class=image>
+                <img src='https://d2slcw3kip6qmk.cloudfront.net/marketing/pages/discovery-page/UML-interaction-diagram/communication-diagram@2x.png'>
+            </div>
+            <p>Os diagramas de interação podem ser implementados em diversos cenários para fornecer um conjunto exclusivo de informações. Eles podem ser usados para:</p>
+            <ul>
+                <li><b>Modelar um sistema como uma sequência de eventos</b> organizada por tempo.</li>
+                <li><b>Fazer engenharia reversa</b> ou avançada de um sistema ou processo.</li>
+                <li><b>Organizar a estrutura de vários eventos interativos.</b></li>
+                <li><b>Mostrar</b>, de forma simples, <b>o comportamento de mensagens</b> e linhas da vida dentro de um sistema.</li>
+                <li><b>Identificar possíveis conexões</b> entre elementos de linhas da vida.</li>
+            </ul>
+            <p>Os diagramas de interação são um dos componentes mais importantes da Linguagem de Modelagem Unificada (UML), que é amplamente utilizada no desenvolvimento de software e na análise de sistemas.</p>`,
+
+
+        `<h1>Diagrama de máquina de estado</h1>
+            <p>Um Diagrama de Máquina de Estado, também conhecido como Diagrama de Transição de Estados, <b>é um tipo de diagrama comportamental na Linguagem de Modelagem Unificada (UML) que mostra transições entre vários objetos</b>. Ele é uma representação gráfica da sequência de estados de um objeto, dos eventos que causam uma transição de um estado para outro e as ações que resultam de uma alteração no estado.</p>
+            <p>Os componentes mais comuns de um Diagrama de Máquina de Estado incluem:</p>
+            <ul>
+                <li><b>Estados</b>: Representados por retângulos com cantos arredondados e rotulados com o nome do estado.</li>
+                <li><b>Transições</b>: Marcadas com setas que fluem de um estado para outro, mostrando como os estados mudam.</li>
+                <li><b>Estado inicial</b>: Simbolizado por um círculo escuro que indica o início da atividade.</li>
+                <li><b>Estado final</b>: Representado por um círculo contornado, indicando o fim da atividade.</li>
+            </ul>
+            <div class=image>
+                <img src='https://d2slcw3kip6qmk.cloudfront.net/marketing/pages/chart/UML-state-diagram-tutorial/AirportCheckInExample.PNG'>
+            </div>
+            <p><b>Os Diagramas de Máquina de Estado são úteis para o desenvolvimento de sistemas de tempo real ou dirigidos por eventos porque mostram o comportamento dinâmico</b>. Eles podem ser usados para descrever objetos orientados a eventos em um sistema reativo, ilustrar cenários de caso de uso em um contexto de negócios, descrever como um objeto se move por vários estados em seu tempo de vida, e mostrar o comportamento geral de uma máquina de estados ou o comportamento de um conjunto relacionado de máquinas de estados.</p>`
+    ]
+
+    let L5c = [
+        `<h1>Diagrama de Comunicação</h1>
+        <p><b>Um Diagrama de Comunicação é um tipo de diagrama de interação na Linguagem de Modelagem Unificada (UML) que mostra as interações entre objetos ou funções associados com linhas de vida</b> e mensagens transmitidas entre linhas de vida. Os componentes mais comuns de um Diagrama de Comunicação incluem:</p>
+        <ul>
+            <li><b>Linhas de Vida</b>: Representam os objetos que participam de uma interação.</li>
+            <li><b>Caminhos de Mensagem</b>: São conectores entre as funções ou objetos representados pelas linhas de vida no diagrama.</li>
+            <li><b>Mensagens</b>: Definem um tipo específico de comunicação entre instâncias em uma interação.</li>
+        </ul>
+        <p><b>Os Diagramas de Comunicação são úteis para visualizar a relação entre os objetos que colaboram para realizar uma determinada tarefa</b>. Eles fornecem uma visualização alternativa das mesmas informações dos diagramas de sequência. Nos diagramas de sequência, o foco é a ordenação das mensagens com o tempo; nos diagramas de comunicação, o foco é a estrutura das mensagens transmitidas entre os objetos na interação. Os Diagramas de Comunicação podem identificar os seguintes aspectos de uma interação ou tarefa:</p>
+        <ul>
+            <li><b>Objetos</b> que participam da interação</li>
+            <li><b>Interfaces</b> que as classes participantes exigem</li>
+            <li><b>Alterações estruturais</b> que uma interação requer</li>
+            <li><b>Dados transmitidos entre os objetos</b> em uma interação</li>
+        </ul>
+        <div class=image>
+            <img src='https://www.cin.ufpe.br/~gta/rup-vc/core.base_rup/guidances/guidelines/resources/collab1.gif'>
+        </div>
+        <p><b>Os Diagramas de Comunicação são semelhantes aos Diagramas de Objetos</b>, onde uma linha de vida representa os objetos na interação e as setas representam as mensagens transmitidas entre as linhas de vida. Pontas de setas indicam a direção das mensagens, para frente ou para trás, e números de sequência indicam a ordem na qual as mensagens são transmitidas.</p>`,
+
+
+        `<h1>Diagrama de Sequência</h1>
+        <p><b>Um Diagrama de Sequência é um tipo de diagrama de interação na Linguagem de Modelagem Unificada (UML) que mostra a colaboração dinâmica entre vários objetos</b>, descrevendo a ordem temporal na qual as mensagens são enviadas entre eles.</p>
+        <p>Os componentes mais comuns de um Diagrama de Sequência incluem:</p>
+        <ul>
+            <li><b>Objetos</b>: Representados por retângulos contendo o nome do objeto sublinhado.</li>
+            <li><b>Linhas de Vida</b>: Representam os objetos que participam de uma interação.</li>
+            <li><b>Mensagens</b>: Definem um tipo específico de comunicação entre instâncias em uma interação.</li>
+        </ul>
+        <div class=image>
+            <img src=''>
+        </div>
+        <p>Eles são focados no tempo e mostram a ordem da interação visualmente, usando o eixo vertical do diagrama para representar o tempo, quais mensagens são enviadas e quando. Eles são usados por desenvolvedores de software e profissionais de negócios para entender as necessidades de um novo sistema ou para documentar um processo existente. Além disso, podem ser úteis para representar os detalhes de um caso de uso UML, modelar a lógica de um processo, função ou operação sofisticado, ver como objetos e componentes interagem uns com os outros para concluir um processo, e planejar e compreender a funcionalidade detalhada de um cenário existente ou futuro.</p>
+        <p>Os Diagramas de Sequência também são conhecidos como <b>diagramas de eventos ou cenários de eventos</b>. Existem dois tipos de diagramas de sequência: <b>diagramas UML e diagramas baseados em código</b>. O baseado em código é proveniente de código de programação.</p>`,
+
+
+        `<h1>Diagrama de máquina de estado</h1>
+        <p><b>Um Diagrama de Tempo é um tipo de diagrama comportamental na Linguagem de Modelagem Unificada (UML) que revela interações com foco no tempo e restrições relacionadas</b>. Os diagramas de tempo também exploram os comportamentos dos objetos ao longo de um período de tempo. Os componentes mais comuns de um Diagrama de Tempo incluem:</p>
+        <ul>
+            <li><b>Linha de Vida</b>: Representa um elemento individual na interação.</li>
+            <li><b>Mensagens</b>: Definem um tipo específico de comunicação entre instâncias em uma interação.</li>
+        </ul>
+        <p><b>Os Diagramas de Tempo são uma forma especializada de um diagrama de sequência.</b> No entanto, ao contrário dos diagramas de sequência, nos diagramas de tempo, o tempo aumenta da esquerda para a direita e as linhas de vida são representadas verticalmente. Você pode considerar um diagrama de tempo uma forma invertida de diagrama de sequência porque o tempo é mostrado no eixo x e lido da esquerda para a direita, enquanto diferentes componentes são mostrados no eixo y.</p>
+        <div class=image>
+            <img src='https://www.researchgate.net/publication/342546798/figure/fig2/AS:907942815621122@1593481844314/Figura-13-Diagrama-de-tempo-Outra-possibilidade-de-utilizacao-foram-os-diagramas-de-caso.ppm'>
+        </div>
+        <p>Os Diagramas de Tempo são uma ótima ferramenta para mostrar o tempo gasto por cada atividade e ajudar a equipe a identificar as ações mais demoradas e um espaço para melhorias. Quando um objeto permanece em um determinado estado, a linha do tempo é paralela a esse estado. Quando ocorre uma mudança de estado, ela é mostrada pela alteração no eixo vertical e o objeto se move de um nível para outro. A alteração pode ocorrer devido a uma mensagem, evento ou uma mudança de condição dentro do sistema. Assim, <b>um período de tempo também pode desencadear uma mudança no diagrama de tempo</b>.</p>`,
+
+
+        `<h1>Diagrama de Visão Geral de Interação</h1>
+        <p><b>Um Diagrama de Visão Geral de Interação é um tipo de diagrama comportamental na Linguagem de Modelagem Unificada (UML) que fornece uma visão geral do controle de fluxo</b>. Ele é semelhante a um Diagrama de Atividades, mas também mostra a interação entre outros diagramas de interação. Os componentes mais comuns de um Diagrama de Visão Geral de Interação incluem:</p>
+        <ul>
+            <li><b>Quadros</b>: Utilizados no lugar de nós de ação.</li>
+            <li><b>Nó de Decisão</b>: Símbolo utilizado para representar uma decisão no fluxo.</li>
+            <li><b>Nó Inicial</b>: Representa o início da atividade.</li>
+        </ul>
+        <p><b>Um Diagrama de Visão Geral de Interação pode mostrar um fluxo de controle normal ou alternativo em um sistema</b>. A notação do diagrama de visão geral de interação é semelhante à notação para o diagrama de atividades e de sequência. Uma visão geral de interação também pode mostrar o fluxo de atividade entre os diagramas. <b>Eles são úteis para fornecer um alto nível de abstração em um modelo</b>. Eles combinam diagramas de atividade com diagrama de sequência, representando o envio ou o recebimento de dados entre um ator e um caso de uso.</p>
+        <div class=image>
+            <img src='https://d2slcw3kip6qmk.cloudfront.net/marketing/pages/discovery-page/UML-interaction-diagram/UML-Interaction-Overview-Diagram@2x.png'>
+        </div>`
+    ]
+
+    let connect = (ctx, L1, L2, f) => {
+        let X1 = L1.offsetLeft + L1.offsetWidth*f
+        let X2 = L2.offsetLeft + 1
+        let Y1 = L1.offsetTop
+        let Y2 = L2.offsetTop + L2.offsetHeight/2
+
+        ctx.beginPath()
+        ctx.lineTo(X1, Y1)
+        ctx.lineTo(X1, Y2)
+        ctx.lineTo(X2, Y2)
+        ctx.stroke()
+    }
+
+    let W = $(window)
+    let sect = $("section")
+    let imgA = sect.find(".imgAmpl")
+    let w
+    let h
+    let wI = null
+    let hI
+    let wIP
+    let hIP
+    let pX = 0
+    let pY = 0
+    let resizeImage = function() {
+        if(wI > hI) {
+            wIP = w*1.2
+            hIP = w*1.2*hI/wI
+        } else {
+            wIP = h*1.2*wI/hI
+            hIP = h*1.2
+        }
+        imgA.width(wIP)
+        imgA.height(hIP)
+        imgA.css("margin-left", pX*wIP)
+        imgA.css("margin-top", pY*hIP)
+    }
+    let resizeMain = function(main) {
+        w = W.width()
+        h = W.height()
+        if(w > h) main.attr("style", "transform: scale(" + (h*0.8/930) + ")")
+        else main.attr("style", "transform: scale(" + (w*0.8/930) + ")")
+        
+        if(wI != null) resizeImage()
+    }
+    W.ready(() => {
+        let div = $(".div")
+        let L1 = $(".L1")
+        let L2 = $(".L2")
+        let L3 = $(".L3")
+        let L4 = $(".L4")
+        let L5 = $(".L5")
+        let sectD = sect.find("div")
+        let sImg = sect.find(".x")
+        let main = $("main")
+        let load = $(".loading")
+
+        setTimeout(function() {
+            load.attr("style", "opacity: 0")
+
+            // CRIAR DESENHO DAS CONEXÕES
+            let C = $("canvas")
+            C.attr("width", div.width())
+            C.attr("height", div.height())
+
+            let ctx = C[0].getContext("2d")
+            ctx.strokeStyle = "rgb(189, 102, 165)"
+            ctx.lineWidth = 4
+            
+            for(let i = 0; i < L2.length; i++) {
+                connect(ctx, L1[0], L2[i], 0.5)
+                connect(ctx, L1[0], L2[i], 0.5)
+            } for(let i = 0; i < L3.length; i++) connect(ctx, L2[0], L3[i], 0.5)
+            for(let i = 0; i < L4.length; i++) connect(ctx, L2[1], L4[i], 0.8)
+            for(let i = 0; i < L5.length; i++) connect(ctx, L4[2], L5[i], 0.5)
+
+
+            // ATRIBUIR FUNÇÕES
+            for(let i = 0; i < L3.length; i++) functS(L3[i], L3c[i])
+            for(let i = 0; i < L4.length; i++) functS(L4[i], L4c[i])
+            for(let i = 0; i < L5.length; i++) functS(L5[i], L5c[i])
+            setTimeout(() => { load.hide() }, 500)
+        }, 500)
+
+
+        imgA.on("click", function() {
+            W.off("mousemove")
+            imgA.width(0)
+            imgA.height(0)
+            imgA.attr("src", "")
+            sectD.attr("style", "")
+            sImg.attr("style", "")
+            wI = null
+        })
+
+        resizeMain(main)
+        W.on("resize", () => resizeMain(main))
+
+        let functS = (div, txt) => {
+            $(div).on("click", function() {
+                if(!condSect) {
+                    sect.css("left", "0")
+                    sectD.html(txt)
+
+                    let imgS = sect.find(".image > img")
+                    imgS.on("click", function() {
+                        wI = imgS[0].naturalWidth
+                        hI = imgS[0].naturalHeight
+
+                        sectD.hide()
+                        sImg.hide()
+                        resizeImage()
+
+                        imgA.attr("src", imgS.attr("src"))
+                        W.on("mousemove", function(E) {
+                            pX = 1/2 - E.clientX/w
+                            pY = 1/2 - E.clientY/h
+                            imgA.css("margin-left", pX*wIP)
+                            imgA.css("margin-top", pY*hIP)
+                            //imgA.css("margin-left", (-E.clientX + w/2)*wIP/w)
+                            //imgA.css("margin-top", (-E.clientY + h/2)*hIP/h)
+                        })
+                    })
+
+                    condSect = true
+                    setTimeout(function() {
+                        condSect = false
+                    }, 700)
+                }
+            })
+        }
+
+        sectD.html(L3c[0])
+        sImg.on("click", function() {
+            if(!condSect) {
+                sect.attr("style", "")
+                condSect = true
+                setTimeout(function() {
+                    condSect = false
+                }, 700)
+            }
+        })
+    })
+</script>
+</html>
